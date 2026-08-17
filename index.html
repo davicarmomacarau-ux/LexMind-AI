@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>LexMind-AI - Validador Jurídico</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background-color: #f4f6f9; }
+        .container { max-width: 600px; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        select, input[type="file"], button { width: 100%; padding: 10px; margin-top: 5px; }
+        button { background-color: #0056b3; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .resultado { margin-top: 20px; padding: 15px; border-radius: 4px; background-color: #e9ecef; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>LexMind-AI — Validação de Documentos</h2>
+        <form id="uploadForm">
+            <div class="form-group">
+                <label for="tipoDoc">Tipo de Documento:</label>
+                <select id="tipoDoc" required>
+                    <option value="Contrato Social">Contrato Social</option>
+                    <option value="Matrícula de Imóvel">Matrícula de Imóvel</option>
+                    <option value="Escritura Pública">Escritura Pública</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="fileInput">Arquivo (TXT/PDF):</label>
+                <input type="file" id="fileInput" required>
+            </div>
+            <button type="submit">Analisar Documento</button>
+        </form>
+
+        <div id="resultado" class="resultado" style="display: none;"></div>
+    </div>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const tipoDoc = document.getElementById('tipoDoc').value;
+            const fileInput = document.getElementById('fileInput').files[0];
+            
+            const formData = new FormData();
+            formData.append('tipo_doc', tipoDoc);
+            formData.append('file', fileInput);
+
+            const resBox = document.getElementById('resultado');
+            resBox.style.display = 'block';
+            resBox.innerHTML = 'Processando documento via IA...';
+
+            try {
+                const response = await fetch('http://localhost:8000/api/v1/analisar-documento', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                
+                resBox.innerHTML = `
+                    <h3>Resultado da Análise</h3>
+                    <p><strong>Status:</strong> ${data.status}</p>
+                    <p><strong>Resumo:</strong> ${data.resumo}</p>
+                    <p><strong>Observações:</strong> ${data.inconsistencias}</p>
+                `;
+            } catch (err) {
+                resBox.innerHTML = '<span style="color:red;">Erro ao processar o documento.</span>';
+            }
+        });
+    </script>
+</body>
+</html>
